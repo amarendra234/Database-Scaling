@@ -1,0 +1,28 @@
+show databases;
+create database test;
+use test;
+create table bookings(
+       booking_id INT,
+       user_id int,
+       booking_date date,
+       status varchar(50),
+       primary key (booking_id, booking_date)
+)
+PARTITION BY RANGE (YEAR(booking_date) * 100 + MONTH(booking_date)) (
+    PARTITION p202301 VALUES LESS THAN (202301),
+    PARTITION p202302 VALUES LESS THAN (202302),
+    PARTITION p202303 VALUES LESS THAN (202303),
+    PARTITION p202304 VALUES LESS THAN (202304),
+    PARTITION p202305 VALUES LESS THAN (202305),
+    PARTITION p202306 VALUES LESS THAN (202306),
+    PARTITION pmax VALUES LESS THAN MAXVALUE
+);
+INSERT INTO bookings VALUES (1, 101, '2023-01-15', 'Completed'); -- Goes to p_before_2020
+INSERT INTO bookings VALUES (2, 102, '2023-02-20', 'Pending');   -- Goes to p_2020
+INSERT INTO bookings VALUES (3, 103, '2023-03-05', 'Cancelled'); -- Goes to p_2021
+INSERT INTO bookings VALUES (4, 104, '2023-04-09', 'Completed'); -- Goes to p_future
+
+select * from bookings;
+select * from bookings partition(p202303);
+select * from bookings
+where booking_date >= '2023-01-01' and booking_date < '2023-03-10' ;
